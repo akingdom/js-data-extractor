@@ -33,3 +33,73 @@ Just download `jsextractor.py` and make it executable:
 
 ```bash
 chmod +x jsextractor.py
+```
+
+No pip install needed – it uses only the Python standard library.
+
+## Usage
+
+### Command Line
+
+```bash
+# Extract the first assignment of 'thingCategories'
+python jsextractor.py data.js thingCategories
+
+# Extract all assignments of 'config' and 'settings'
+python jsextractor.py data.js config settings --all
+
+# Extract a single variable and print its value as JSON
+python jsextractor.py data.js data --pretty
+
+# Extract multiple variables as a JSON object
+python jsextractor.py data.js user profile --json
+
+# Let the tool find the first object/array literal (no variable name)
+python jsextractor.py data.js --pretty
+```
+
+**Options:**
+
+| Flag | Description |
+|------|-------------|
+| `--all` | Extract every occurrence of the variable(s) (default: first only). |
+| `--first` | Extract only the first occurrence (default). |
+| `--json` | Output the extracted data as compact JSON. |
+| `--pretty` | Output as indented JSON (implies `--json`). |
+| `--no-memoize` | Disable key memoization (use if memory is tight). |
+
+### Programmatic Use
+
+```python
+from jsextractor import extract_js_variable
+
+# Get the first assignment of 'thingCategories'
+data = extract_js_variable('data.js', 'thingCategories')
+
+# Get all assignments of 'config'
+configs = extract_js_variable('data.js', 'config', occurrence='all')
+
+# Disable key memoization (optional)
+data = extract_js_variable('data.js', 'data', memoize_keys=False)
+```
+
+## How It Works
+
+1. **Lexer** – scans the file character by character, skipping whitespace, comments, and strings.
+2. **Parser** – a recursive‑descent parser that builds Python objects from the JS literal syntax.
+3. **Extractor** – locates variable assignments of the form `[const|let|var] name = { ... }` or `name = [ ... ]`.
+4. **Output** – returns native Python types (`dict`, `list`, `str`, `int`, `float`, `bool`, `None`).
+
+## Limitations
+
+The parser only handles **literals** – it does **not** evaluate:
+- Function expressions, arrow functions, method definitions
+- Computed property names (`[expr]: value`)
+- Spread/rest operators
+- Template literals with embedded expressions (they are skipped as strings)
+
+These are not needed for static data extraction from generated JS files.
+
+## License
+
+MIT © 2026 – see the [LICENSE](LICENSE) file for details.
